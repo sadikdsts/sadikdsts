@@ -22,7 +22,7 @@
   text-rendering: auto;
 }
 .fa-solid::before, .fas::before, .fa::before { content: var(--fa); }
-.fa-pen-ruler,.fa-pencil-ruler{--fa:"\f5ae"}.fa-lock{--fa:"\f023"}.fa-shield-heart{--fa:"\e574"}.fa-house{--fa:"\f015"}.fa-chart-pie,.fa-pie-chart{--fa:"\f200"}.fa-scale-balanced{--fa:"\f24e"}.fa-bullseye{--fa:"\f140"}.fa-timeline{--fa:"\e29c"}.fa-cloud-bolt,.fa-thunderstorm{--fa:"\f76c"}.fa-user,.fa-user-alt,.fa-user-large{--fa:"\f007"}.fa-arrow-up{--fa:"\f062"}.fa-sliders,.fa-sliders-h{--fa:"\f1de"}.fa-clock-rotate-left,.fa-history{--fa:"\f1da"}.fa-arrow-trend-up{--fa:"\e098"}.fa-sack-dollar{--fa:"\f81d"}.fa-percent,.fa-percentage{--fa:"\%"}.fa-chart-line,.fa-line-chart{--fa:"\f201"}.fa-circle-play,.fa-play-circle{--fa:"\f144"}.fa-house-chimney-crack,.fa-house-damage{--fa:"\f6f1"}.fa-sun{--fa:"\f185"}.fa-circle-info,.fa-info-circle{--fa:"\f05a"}.fa-xmark{--fa:"\f00d"}.fa-wand-magic-sparkles{--fa:"\e2ca"}.fa-piggy-bank{--fa:"\f4d3"}.fa-calendar-days{--fa:"\f073"}.fa-shield-halved{--fa:"\f3ed"}.fa-arrow-right{--fa:"\f061"}
+.fa-pen-ruler,.fa-pencil-ruler{--fa:"\f5ae"}.fa-lock{--fa:"\f023"}.fa-shield-heart{--fa:"\e574"}.fa-house{--fa:"\f015"}.fa-chart-pie,.fa-pie-chart{--fa:"\f200"}.fa-scale-balanced{--fa:"\f24e"}.fa-bullseye{--fa:"\f140"}.fa-timeline{--fa:"\e29c"}.fa-cloud-bolt,.fa-thunderstorm{--fa:"\f76c"}.fa-user,.fa-user-alt,.fa-user-large{--fa:"\f007"}.fa-arrow-up{--fa:"\f062"}.fa-sliders,.fa-sliders-h{--fa:"\f1de"}.fa-clock-rotate-left,.fa-history{--fa:"\f1da"}.fa-arrow-trend-up{--fa:"\e098"}.fa-sack-dollar{--fa:"\f81d"}.fa-percent,.fa-percentage{--fa:"\%"}.fa-chart-line,.fa-line-chart{--fa:"\f201"}.fa-circle-play,.fa-play-circle{--fa:"\f144"}.fa-house-chimney-crack,.fa-house-damage{--fa:"\f6f1"}.fa-sun{--fa:"\f185"}.fa-circle-info,.fa-info-circle{--fa:"\f05a"}.fa-xmark{--fa:"\f00d"}.fa-wand-magic-sparkles{--fa:"\e2ca"}.fa-piggy-bank{--fa:"\f4d3"}.fa-calendar-days{--fa:"\f073"}.fa-shield-halved{--fa:"\f3ed"}.fa-arrow-right{--fa:"\f061"}.fa-spinner{--fa:"\f110"}.fa-spin{animation:st-spin .7s linear infinite}
 </style>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -345,11 +345,45 @@
     .st-kpi-row { grid-template-columns: 1fr; }
     .complex-grid { grid-template-columns: 1fr; }
   }
+
+  /* ── Interaction polish ── */
+  button:focus-visible, [role="button"]:focus-visible, input[type="range"]:focus-visible {
+    outline: 3px solid rgba(41,241,243,.75); outline-offset: 2px;
+  }
+  .logo, .dash-nav-item, .st-kpi[role="button"] { cursor:pointer; }
+  .st-kpi[role="button"] { transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
+  .st-kpi[role="button"]:hover { transform:translateY(-1px); box-shadow:var(--shadow-lg); border-color:var(--blue-mid); }
+  .complex-card.is-running { opacity:.72; pointer-events:none; }
+  .btn-run.is-running { opacity:.82; cursor:wait; }
+  .st-toast {
+    position:fixed; left:50%; bottom:22px; z-index:10000; transform:translate(-50%, 18px);
+    max-width:min(420px, calc(100vw - 32px)); padding:10px 15px; border-radius:999px;
+    background:var(--ma-deep-teal); color:#fff; box-shadow:0 10px 28px rgba(0,24,32,.25);
+    font-size:12px; font-weight:700; text-align:center; opacity:0; pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .st-toast.show { opacity:1; transform:translate(-50%, 0); }
+  .st-toast.progress::before { content:''; display:inline-block; width:8px; height:8px; margin-right:7px;
+    border:2px solid rgba(255,255,255,.45); border-top-color:#fff; border-radius:50%;
+    vertical-align:-1px; animation:st-spin .7s linear infinite; }
+  .st-toast.success { background:var(--green-dark); }
+  .st-toast.warning { background:var(--amber-dark); }
+  @keyframes st-spin { to { transform:rotate(360deg); } }
+  @media (max-width: 680px) {
+    .fd-body { padding-left:16px; padding-right:16px; }
+    .app-nav { padding-left:16px; padding-right:16px; }
+    .st-tabs { width:100%; }
+    .st-tab { flex:1; justify-content:center; padding-left:8px; padding-right:8px; }
+    .ai-insight-actions { flex-direction:column; }
+    .fbtn { justify-content:center; }
+    .st-toast { bottom:12px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="wf-badge"><i class="fa-solid fa-pen-ruler"></i> Wireframe — Stress Test module</div>
+<div class="wf-badge"><i class="fa-solid fa-pen-ruler"></i> Preview — Stress Test module</div>
+<div class="st-toast" id="st-toast" role="status" aria-live="polite"></div>
 
 <div class="browser">
   <div class="browser-chrome">
@@ -358,19 +392,21 @@
   </div>
 
   <div class="app-nav">
-    <div class="logo"><i class="fa-solid fa-shield-heart"></i> MoneyAngel</div>
+    <div class="logo" id="home-link" role="button" tabindex="0" title="Back to the top">
+      <i class="fa-solid fa-shield-heart"></i> MoneyAngel
+    </div>
     <div class="dash-nav-items" id="dash-nav-items">
-      <div class="dash-nav-item" data-nav="dashboard"><i class="fa fa-house"></i> Dashboard</div>
-      <div class="dash-nav-item" data-nav="budget"><i class="fa fa-chart-pie"></i> Budget</div>
-      <div class="dash-nav-item" data-nav="networth"><i class="fa fa-scale-balanced"></i> Net Worth</div>
-      <div class="dash-nav-item" data-nav="goals"><i class="fa fa-bullseye"></i> Goals</div>
-      <div class="dash-nav-item" data-nav="timeline"><i class="fa fa-timeline"></i> Timeline</div>
-      <div class="dash-nav-item active has-new" data-nav="stresstest"><i class="fa-solid fa-cloud-bolt"></i> Stress Test<span class="new-tag">NEW</span></div>
-      <div class="dash-nav-item" data-nav="aboutme"><i class="fa fa-user"></i> About Me</div>
+      <div class="dash-nav-item" data-nav="dashboard" role="button" tabindex="0"><i class="fa fa-house"></i> Dashboard</div>
+      <div class="dash-nav-item" data-nav="budget" role="button" tabindex="0"><i class="fa fa-chart-pie"></i> Budget</div>
+      <div class="dash-nav-item" data-nav="networth" role="button" tabindex="0"><i class="fa fa-scale-balanced"></i> Net Worth</div>
+      <div class="dash-nav-item" data-nav="goals" role="button" tabindex="0"><i class="fa fa-bullseye"></i> Goals</div>
+      <div class="dash-nav-item" data-nav="timeline" role="button" tabindex="0"><i class="fa fa-timeline"></i> Timeline</div>
+      <div class="dash-nav-item active has-new" data-nav="stresstest" role="button" tabindex="0" aria-current="page"><i class="fa-solid fa-cloud-bolt"></i> Stress Test<span class="new-tag">NEW</span></div>
+      <div class="dash-nav-item" data-nav="aboutme" role="button" tabindex="0"><i class="fa fa-user"></i> About Me</div>
     </div>
     <div class="nav-right">
-      <span>John &amp; Linda</span>
-      <div class="nav-avatar">JL</div>
+      <span id="profile-menu-trigger" role="button" tabindex="0" title="Open household profile">John &amp; Linda</span>
+      <div class="nav-avatar" id="profile-avatar" role="button" tabindex="0" title="Open household profile">JL</div>
     </div>
   </div>
 
@@ -412,19 +448,19 @@
         <div class="st-kpi-value">£3.80m</div>
         <div class="st-kpi-foot">No stress applied &middot; today's assumptions</div>
       </div>
-      <div class="st-kpi">
+      <div class="st-kpi" data-scenario="stagflation" role="button" tabindex="0" title="Run Toxic Stagflation">
         <div class="st-kpi-label">Worst scenario tested</div>
         <div class="st-kpi-value neg">−£1.62m</div>
         <div class="st-kpi-foot">"Toxic Stagflation" — see Complex Scenarios</div>
       </div>
-      <div class="st-kpi">
+      <div class="st-kpi" data-scenario="goldenspring" role="button" tabindex="0" title="Run Golden Coiled Spring">
         <div class="st-kpi-label">Best scenario tested</div>
         <div class="st-kpi-value pos">+£1.14m</div>
         <div class="st-kpi-foot">"Golden Coiled Spring" — see Complex Scenarios</div>
       </div>
       <div class="st-kpi">
         <div class="st-kpi-label">Scenarios run this quarter</div>
-        <div class="st-kpi-value">3<span style="font-size:12px;color:var(--gray-400);font-weight:600"> of 10</span></div>
+        <div class="st-kpi-value" id="scenario-count">3<span style="font-size:12px;color:var(--gray-400);font-weight:600"> of 10</span></div>
         <div class="st-kpi-foot">Free tier &middot; resets 1 Jan</div>
       </div>
     </div>
@@ -436,8 +472,8 @@
         <div class="st-section-sub">Simple scenarios move one economic factor at a time. Complex scenarios combine several — modelled on real and worst/best-case UK conditions.</div>
       </div>
       <div class="st-tabs">
-        <button class="st-tab active" id="tab-simple" onclick="switchTab('simple')"><i class="fa-solid fa-sliders"></i> Simple Scenarios <span class="st-tab-count">4</span></button>
-        <button class="st-tab" id="tab-complex" onclick="switchTab('complex')"><i class="fa-solid fa-clock-rotate-left"></i> Complex Scenarios <span class="st-tab-count">6</span></button>
+        <button type="button" class="st-tab active" id="tab-simple" aria-selected="true" onclick="switchTab('simple')"><i class="fa-solid fa-sliders"></i> Simple Scenarios <span class="st-tab-count">4</span></button>
+        <button type="button" class="st-tab" id="tab-complex" aria-selected="false" onclick="switchTab('complex')"><i class="fa-solid fa-clock-rotate-left"></i> Complex Scenarios <span class="st-tab-count">6</span></button>
       </div>
     </div>
 
@@ -458,13 +494,13 @@
     </div>
 
     <!-- ═══ RESULTS PANEL ═══ -->
-    <div class="st-results" id="results-panel">
+    <div class="st-results" id="results-panel" aria-hidden="true">
       <div class="st-results-head">
         <div>
           <div class="st-results-title"><i class="fa-solid fa-chart-line" style="color:var(--ma-deep-teal)"></i> <span id="results-title">Result</span> <span class="rt-tag" id="results-tag">SIMPLE</span></div>
           <div class="st-results-sub" id="results-sub">Impact on your Timeline, Budget and Goal Tracking, from today through age 85.</div>
         </div>
-        <button class="st-results-close" onclick="closeResults()"><i class="fa-solid fa-xmark"></i></button>
+        <button type="button" class="st-results-close" aria-label="Close results" onclick="closeResults()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="st-results-grid">
         <div class="st-chart-col">
@@ -510,7 +546,7 @@
           <div class="remedy-card" id="remedy-card">
             <div class="remedy-head">
               <div class="remedy-title"><i class="fa-solid" id="remedy-icon"></i> <span id="remedy-title-text">Model the extra saving</span></div>
-              <button class="st-results-close" onclick="closeRemedy()"><i class="fa-solid fa-xmark"></i></button>
+              <button type="button" class="st-results-close" aria-label="Close modelling tool" onclick="closeRemedy()"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <!-- Save mode -->
@@ -555,6 +591,104 @@
 </div>
 
 <script>
+/* ════════════════════════════════════════════════════════════
+   INTERACTION STATE — the preview keeps a small, session-only run history
+   so quota, feedback and result shortcuts behave like a real portal.
+   ════════════════════════════════════════════════════════════ */
+const stressSession = { runs: 3, runKeys: new Set(), busy: false };
+let toastTimer = null;
+
+function showToast(message, tone='') {
+  const toast = document.getElementById('st-toast');
+  if(!toast) return;
+  window.clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.className = 'st-toast show' + (tone ? ' ' + tone : '');
+  if(tone !== 'progress') {
+    toastTimer = window.setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+}
+
+function hideToast() {
+  const toast = document.getElementById('st-toast');
+  if(toast) toast.classList.remove('show');
+}
+
+function updateScenarioCount() {
+  const count = document.getElementById('scenario-count');
+  if(count) count.innerHTML = `${stressSession.runs}<span style="font-size:12px;color:var(--gray-400);font-weight:600"> of 10</span>`;
+  const hint = document.getElementById('tier-hint');
+  if(hint) hint.textContent = `${Math.max(0, 10 - stressSession.runs)} scenario${stressSession.runs === 9 ? '' : 's'} left in your free tier this quarter.`;
+}
+
+function canRunScenario(key) {
+  if(stressSession.busy) {
+    showToast('Your previous stress test is still running.', 'warning');
+    return false;
+  }
+  if(stressSession.runs >= 10 && !stressSession.runKeys.has(key)) {
+    showToast('You have used all 10 stress tests this quarter. Your allowance resets on 1 January.', 'warning');
+    return false;
+  }
+  return true;
+}
+
+function markScenarioRun(key) {
+  if(!stressSession.runKeys.has(key)) {
+    stressSession.runKeys.add(key);
+    stressSession.runs = Math.min(10, stressSession.runs + 1);
+  }
+  updateScenarioCount();
+}
+
+function setTriggerBusy(trigger, busy) {
+  if(!trigger) return;
+  if(trigger.classList.contains('btn-run')) {
+    if(busy) {
+      trigger.dataset.originalLabel = trigger.innerHTML;
+      trigger.classList.add('is-running');
+      trigger.disabled = true;
+      trigger.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analysing…';
+    } else {
+      trigger.innerHTML = trigger.dataset.originalLabel || trigger.innerHTML;
+      trigger.classList.remove('is-running');
+      trigger.disabled = false;
+    }
+    return;
+  }
+  const footLabel = trigger.querySelector('.complex-card-foot span');
+  if(busy) {
+    trigger.classList.add('is-running');
+    trigger.setAttribute('aria-busy', 'true');
+    if(footLabel) { trigger.dataset.originalLabel = footLabel.textContent; footLabel.textContent = 'Analysing…'; }
+  } else {
+    trigger.classList.remove('is-running');
+    trigger.removeAttribute('aria-busy');
+    if(footLabel && trigger.dataset.originalLabel) footLabel.textContent = trigger.dataset.originalLabel;
+  }
+}
+
+function beginScenarioRun(key, trigger, label, render) {
+  if(!canRunScenario(key)) return false;
+  stressSession.busy = true;
+  setTriggerBusy(trigger, true);
+  showToast(`MoneyAngel is testing ${label} against your plan…`, 'progress');
+  window.setTimeout(() => {
+    try {
+      markScenarioRun(key);
+      render();
+      showToast('Stress test complete — your plan has been updated.', 'success');
+    } catch(error) {
+      console.error('Stress test render failed', error);
+      showToast('We could not finish that stress test. Please try again.', 'warning');
+    } finally {
+      stressSession.busy = false;
+      setTriggerBusy(trigger, false);
+    }
+  }, 360);
+  return true;
+}
+
 /* ════════════════════════════════════════════════════════════
    DATA — Simple scenarios (from AI Scenario Stress Tests brief)
    ════════════════════════════════════════════════════════════ */
@@ -666,7 +800,7 @@ function renderSimpleGrid(){
 
       <div class="simple-card-foot">
         <div class="simple-card-out">Updates Budget, Net Worth &amp; Goal Tracking</div>
-        <button class="btn-run" onclick="runSimple('${s.key}')"><i class="fa-solid fa-circle-play"></i> Run stress test</button>
+        <button class="btn-run" onclick="runSimple('${s.key}', this)"><i class="fa-solid fa-circle-play"></i> Run stress test</button>
       </div>
     </div>`;
   }).join('');
@@ -689,7 +823,9 @@ function renderComplexGrid(){
   const badgeText = { worst:'Worst-case', best:'Best-case', hist:'Real historical' };
   grid.innerHTML = COMPLEX.map((c, i) => {
     return `
-    <div class="complex-card" data-key="${c.key}" onclick="runComplex('${c.key}')">
+    <div class="complex-card" data-key="${c.key}" role="button" tabindex="0" aria-label="Run ${c.title.replace(/"/g, '&quot;')}"
+      onclick="runComplex('${c.key}', this)"
+      onkeydown="if(event.target===this && (event.key==='Enter' || event.key===' ')){event.preventDefault();runComplex('${c.key}', this)}">
       <div class="complex-card-top">
         <div class="cc-icon ${c.type}"><i class="fa-solid ${c.icon}"></i></div>
         <span class="cc-badge ${c.type}">${badgeText[c.type]}</span>
@@ -703,6 +839,7 @@ function renderComplexGrid(){
         <div class="cc-desc">${c.desc}</div>
         <div class="cc-stats">
           <span>CPI <b>${c.cpi}%</b></span>
+          <span>AWE <b>${c.awe > 0 ? '+' : ''}${c.awe}%</b></span>
           <span>Base rate <b>${c.boe}%</b></span>
           <span>FTSE <b>${c.ftse>0?'+':''}${c.ftse}%</b></span>
         </div>
@@ -734,6 +871,8 @@ function toggleInfo(id){
 function switchTab(tab){
   document.getElementById('tab-simple').classList.toggle('active', tab==='simple');
   document.getElementById('tab-complex').classList.toggle('active', tab==='complex');
+  document.getElementById('tab-simple').setAttribute('aria-selected', tab==='simple');
+  document.getElementById('tab-complex').setAttribute('aria-selected', tab==='complex');
   document.getElementById('panel-simple').classList.toggle('active', tab==='simple');
   document.getElementById('panel-complex').classList.toggle('active', tab==='complex');
 }
@@ -741,63 +880,71 @@ function switchTab(tab){
 /* ════════════════════════════════════════════════════════════
    RUN — Simple scenario
    ════════════════════════════════════════════════════════════ */
-function runSimple(key){
+function runSimple(key, trigger){
   const s = SIMPLE.find(x=>x.key===key);
-  const st = simpleState[key];
-  const delta = st.value - s.baseline;
-  const isNeutral = Math.abs(delta) < 0.15;          // effectively unchanged from today
-  const isBad = !isNeutral && ((delta > 0 && s.badDir==='max') || (delta < 0 && s.badDir==='min'));
-  const magnitude = Math.abs(st.value - s.baseline) / (Math.abs(s.max - s.min)); // 0..1 rough severity
-  const durMult = st.duration === 'long' ? 1.6 : 1.0;
-  const timingMult = st.timing === 'retire' ? 1.35 : st.timing === 'mid' ? 1.15 : 1.0;
-  const severity = Math.min(1, magnitude * durMult * timingMult * 1.4);
+  if(!s) return;
+  const st = {...simpleState[key]};
+  beginScenarioRun(key, trigger, s.label, () => {
+    const delta = st.value - s.baseline;
+    const isNeutral = Math.abs(delta) < 0.15;          // effectively unchanged from today
+    const isBad = !isNeutral && ((delta > 0 && s.badDir==='max') || (delta < 0 && s.badDir==='min'));
+    const magnitude = Math.abs(st.value - s.baseline) / (Math.abs(s.max - s.min)); // 0..1 rough severity
+    const durMult = st.duration === 'long' ? 1.6 : 1.0;
+    const timingMult = st.timing === 'retire' ? 1.35 : st.timing === 'mid' ? 1.15 : 1.0;
+    const severity = Math.min(1, magnitude * durMult * timingMult * 1.4);
 
-  const scoreFrom = 75;
-  const scoreTo = Math.round(isBad ? scoreFrom - severity*40 : scoreFrom + severity*20);
-  const nwFrom = 3.80;
-  const nwTo = +(isBad ? nwFrom - severity*1.7 : nwFrom + severity*1.1).toFixed(2);
-  const budget = Math.round((isBad ? -1 : 1) * severity * 480);
-  const goalsOk = isBad ? Math.max(2, 5 - Math.round(severity*3)) : 5;
+    const scoreFrom = 75;
+    const scoreTo = Math.round(isBad ? scoreFrom - severity*40 : scoreFrom + severity*20);
+    const nwFrom = 3.80;
+    const nwTo = +(isBad ? nwFrom - severity*1.7 : nwFrom + severity*1.1).toFixed(2);
+    const budget = Math.round((isBad ? -1 : 1) * severity * 480);
+    const goalsOk = isBad ? Math.max(2, 5 - Math.round(severity*3)) : 5;
 
-  const extraSave = Math.round(severity * 620);
-  const deferMonths = Math.round(severity * 26);
+    const extraSave = Math.round(severity * 620);
+    const deferMonths = Math.round(severity * 26);
 
-  showResults({
-    title: `${s.label}: ${st.value.toFixed(1)}% (${st.timing==='now'?'now':st.timing==='mid'?'mid-term':'at retirement'}, ${st.duration==='short'?'1 yr':'3 yrs'})`,
-    tag: 'SIMPLE',
-    sub: isNeutral
-      ? `This is roughly today's ${s.label.toLowerCase()} — a baseline run with no real stress applied.`
-      : `Testing ${isBad?s.badWord:s.goodWord} against your Timeline, Budget and Goal Tracking.`,
-    scoreFrom, scoreTo, nwFrom, nwTo, budget, goalsOk,
-    isBad,
-    insight: isNeutral
-      ? `At roughly today's rate of <b>${s.baseline}%</b>, nothing changes — this is your plan as it already stands. Move the slider away from ${s.baseline}% to apply some real stress.`
-      : (isBad
-      ? `To stay on track, you'd need to save an extra <b>£${extraSave}/mo</b> from now — or push your goals back <b>${deferMonths} months</b>.`
-      : `This works in your favour — you could reach your goals up to <b>${deferMonths} months early</b>, or reduce your monthly saving by roughly <b>£${extraSave}</b>.`),
-    years: st.duration==='long' ? 3 : 1,
-    needSave: extraSave, needDefer: deferMonths,
+    showResults({
+      title: `${s.label}: ${st.value.toFixed(1)}% (${st.timing==='now'?'now':st.timing==='mid'?'mid-term':'at retirement'}, ${st.duration==='short'?'1 yr':'3 yrs'})`,
+      tag: 'SIMPLE',
+      sub: isNeutral
+        ? `This is roughly today's ${s.label.toLowerCase()} — a baseline run with no real stress applied.`
+        : `Testing ${isBad?s.badWord:s.goodWord} against your Timeline, Budget and Goal Tracking.`,
+      scoreFrom, scoreTo, nwFrom, nwTo, budget, goalsOk,
+      isBad,
+      insight: isNeutral
+        ? `At roughly today's rate of <b>${s.baseline}%</b>, nothing changes — this is your plan as it already stands. Move the slider away from ${s.baseline}% to apply some real stress.`
+        : (isBad
+        ? `To stay on track, you'd need to save an extra <b>£${extraSave}/mo</b> from now — or push your goals back <b>${deferMonths} months</b>.`
+        : `This works in your favour — you could reach your goals up to <b>${deferMonths} months early</b>, or reduce your monthly saving by roughly <b>£${extraSave}</b>.`),
+      years: st.duration==='long' ? 3 : 1,
+      needSave: extraSave, needDefer: deferMonths,
+    });
   });
 }
 
 /* ════════════════════════════════════════════════════════════
    RUN — Complex scenario
    ════════════════════════════════════════════════════════════ */
-function runComplex(key){
-  document.querySelectorAll('.complex-card').forEach(c=>c.classList.remove('selected'));
+function runComplex(key, trigger){
   const c = COMPLEX.find(x=>x.key===key);
-  const badge = { worst:'WORST-CASE', best:'BEST-CASE', hist:'HISTORICAL' }[c.type];
-  showResults({
-    title: c.title,
-    tag: badge,
-    sub: c.desc,
-    scoreFrom: c.score.from, scoreTo: c.score.to,
-    nwFrom: c.nw.from, nwTo: c.nw.to,
-    budget: c.budget, goalsOk: c.goalsOk,
-    isBad: c.type !== 'best',
-    insight: (c.type === 'best' ? `You'd ${c.insight}.` : `You'd need to ${c.insight}.`),
-    years: c.years,
-    needSave: c.needSave, needDefer: c.needDefer,
+  if(!c) return;
+  beginScenarioRun(key, trigger, c.title, () => {
+    document.querySelectorAll('.complex-card').forEach(card=>card.classList.remove('selected'));
+    const selected = document.querySelector(`.complex-card[data-key="${key}"]`);
+    if(selected) selected.classList.add('selected');
+    const badge = { worst:'WORST-CASE', best:'BEST-CASE', hist:'HISTORICAL' }[c.type];
+    showResults({
+      title: c.title,
+      tag: badge,
+      sub: c.desc,
+      scoreFrom: c.score.from, scoreTo: c.score.to,
+      nwFrom: c.nw.from, nwTo: c.nw.to,
+      budget: c.budget, goalsOk: c.goalsOk,
+      isBad: c.type !== 'best',
+      insight: (c.type === 'best' ? `You'd ${c.insight}.` : `You'd need to ${c.insight}.`),
+      years: c.years,
+      needSave: c.needSave, needDefer: c.needDefer,
+    });
   });
 }
 
@@ -810,6 +957,7 @@ function showResults(r){
   CURRENT = r;
   closeRemedy();
   document.getElementById('results-panel').classList.add('show');
+  document.getElementById('results-panel').setAttribute('aria-hidden', 'false');
   document.getElementById('results-title').textContent = r.title;
   document.getElementById('results-tag').textContent = r.tag;
   document.getElementById('results-sub').textContent = r.sub;
@@ -818,7 +966,9 @@ function showResults(r){
   document.getElementById('stat-nw').textContent = `£${r.nwFrom.toFixed(2)}m → £${r.nwTo.toFixed(2)}m`;
   document.getElementById('stat-nw').className = 'st-stat-v ' + (r.nwTo < r.nwFrom ? 'neg' : 'pos');
   const b = r.budget;
-  document.getElementById('stat-budget').textContent = (b < 0 ? '−£' : '+£') + Math.abs(b) + '/mo surplus';
+  document.getElementById('stat-budget').textContent = b < 0
+    ? '−£' + Math.abs(b) + '/mo shortfall'
+    : '+£' + b + '/mo surplus';
   document.getElementById('stat-budget').className = 'st-stat-v ' + (b < 0 ? 'neg' : 'pos');
   const okCount = parseInt(r.goalsOk);
   document.getElementById('stat-goals').textContent = okCount + ' of 5';
@@ -837,15 +987,13 @@ function showResults(r){
   renderGoalRisk(r.goalsOk);
   drawChart(r);
 
-  document.getElementById('score-num').textContent = r.scoreTo;
-  const circumference = 2*Math.PI*33;
-  document.getElementById('score-ring-fg').setAttribute('stroke-dashoffset', (circumference*(1-r.scoreTo/100)).toFixed(1));
-
   document.getElementById('results-panel').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function closeResults(){
   document.getElementById('results-panel').classList.remove('show');
+  document.getElementById('results-panel').setAttribute('aria-hidden', 'true');
+  document.querySelectorAll('.complex-card').forEach(card=>card.classList.remove('selected'));
   closeRemedy();
 }
 
@@ -923,7 +1071,7 @@ function setDeferGoal(i){
 function recoveredScore(fraction){
   const gap = TARGET_SCORE - CURRENT.scoreTo;
   const eff = fraction <= 1 ? fraction : 1 + (fraction-1)*0.25;
-  return Math.round(Math.min(100, CURRENT.scoreTo + gap*eff));
+  return Math.round(Math.min(TARGET_SCORE, CURRENT.scoreTo + gap*eff));
 }
 
 function paintRemedy(newScore){
@@ -1061,10 +1209,69 @@ function drawChart(r){
 }
 
 /* ════════════════════════════════════════════════════════════
+   PORTAL SURFACE — navigation and shortcuts are intentionally local to this
+   standalone module, but they now give clear feedback instead of dead clicks.
+   ════════════════════════════════════════════════════════════ */
+function wirePortalSurface(){
+  const labels = {
+    dashboard:'Dashboard', budget:'Budget', networth:'Net Worth', goals:'Goals',
+    timeline:'Timeline', aboutme:'About Me'
+  };
+  document.querySelectorAll('[data-nav]').forEach(item => {
+    const navigate = () => {
+      const nav = item.dataset.nav;
+      if(nav === 'stresstest') {
+        document.querySelector('.st-hero').scrollIntoView({behavior:'smooth', block:'start'});
+        showToast('You are already in Stress Test.', 'success');
+        return;
+      }
+      showToast(`${labels[nav] || 'That area'} is ready in the full MoneyAngel workspace.`, '');
+    };
+    item.addEventListener('click', navigate);
+    item.addEventListener('keydown', event => {
+      if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); navigate(); }
+    });
+  });
+
+  const home = document.getElementById('home-link');
+  if(home) {
+    const goHome = () => window.scrollTo({top:0, behavior:'smooth'});
+    home.addEventListener('click', goHome);
+    home.addEventListener('keydown', event => {
+      if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); goHome(); }
+    });
+  }
+
+  const profileMessage = () => showToast('John & Linda · household view. Profile settings live in About Me.');
+  ['profile-menu-trigger','profile-avatar'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+      el.addEventListener('click', profileMessage);
+      el.addEventListener('keydown', event => {
+        if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); profileMessage(); }
+      });
+    }
+  });
+
+  document.querySelectorAll('[data-scenario]').forEach(card => {
+    const run = () => {
+      switchTab('complex');
+      runComplex(card.dataset.scenario, card);
+    };
+    card.addEventListener('click', run);
+    card.addEventListener('keydown', event => {
+      if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); run(); }
+    });
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
    INIT
    ════════════════════════════════════════════════════════════ */
 renderSimpleGrid();
 renderComplexGrid();
+updateScenarioCount();
+wirePortalSurface();
 </script>
 
 </body>
